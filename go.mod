@@ -1,4 +1,4 @@
-module gitlab.com/lazarus1/deploy
+module github.com/l1labs/pulumi-deploy
 
 go 1.15
 
