@@ -1,0 +1,15 @@
+# Build Stage
+FROM golang:1.14.1-alpine AS build-env
+ADD ./ /go/src/foo
+
+RUN cd /go/src/foo/api && go build -mod=vendor -o api 
+
+# Final Stage
+FROM alpine
+
+RUN apk add --update ca-certificates && \
+    rm -rf /var/cache/apk/* /tmp/*
+
+WORKDIR /app
+COPY --from=build-env /go/src/foo/api /app/
+ENTRYPOINT ./api

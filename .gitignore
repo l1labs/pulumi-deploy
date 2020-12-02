@@ -1,0 +1,14 @@
+# OS X
+/**/.DS_Store
+
+# Vendored deps
+vendor
+
+
+# Generated code
+.vscode
+binaries
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea

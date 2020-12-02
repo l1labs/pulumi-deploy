@@ -1,0 +1,22 @@
+# Build Stage
+FROM golang:1.14.1-alpine AS build-env
+ADD ./ /go/src/foo
+
+RUN cd /go/src/foo/api && go build -mod=vendor -o api 
+
+# Final Stage
+FROM alpine
+
+LABEL traefik.frontend.passHostHeader="true"
+LABEL traefik.frontend.entryPoints="http"
+LABEL traefik.protocol="http"
+LABEL traefik.backend="api"
+LABEL traefik.frontend.rule="PathPrefix:/v1/auth,/v1/admin,/v1/client,/v1/user,/v1/public,/health"
+LABEL testfield="foo=bar"
+
+RUN apk add --update ca-certificates && \
+    rm -rf /var/cache/apk/* /tmp/*
+
+WORKDIR /app
+COPY --from=build-env /go/src/foo/api /app/
+ENTRYPOINT ./api
