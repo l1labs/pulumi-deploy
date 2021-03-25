@@ -38,25 +38,33 @@ func (d *Postgres) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error
 		return err
 	}
 
-	dbSubnetName := fmt.Sprintf("%v-db-subnet", d.Name)
-	dbSubnet, err := rds.NewSubnetGroup(ctx, dbSubnetName, &rds.SubnetGroupArgs{
-		SubnetIds: pulumi.StringArray{
-			d.VPC.Out.PublicSubnets[0].ID().ToStringOutput(), d.VPC.Out.PublicSubnets[1].ID().ToStringOutput(),
-			d.VPC.Out.PrivateSubnets[0].ID().ToStringOutput(), d.VPC.Out.PrivateSubnets[1].ID().ToStringOutput(),
-		},
-		Tags: pulumi.StringMap{
-			"Name": pulumi.String(dbSubnetName),
-		},
-	}, pulumi.DependsOn([]pulumi.Resource{
-		d.VPC.Out.PublicSubnets[0], d.VPC.Out.PublicSubnets[1],
-		d.VPC.Out.PrivateSubnets[0], d.VPC.Out.PrivateSubnets[1],
-	}),
-	)
-	if err != nil {
-		return err
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
 	}
 
-	d.Args.DbSubnetGroupName = dbSubnet.Name
+	if d.Args.ReplicateSourceDb == nil {
+		dbSubnetName := fmt.Sprintf("%v-db-subnet", d.Name)
+		dbSubnet, err := rds.NewSubnetGroup(ctx, dbSubnetName, &rds.SubnetGroupArgs{
+			SubnetIds: pulumi.StringArray{
+				d.VPC.Out.PublicSubnets[0].ID().ToStringOutput(), d.VPC.Out.PublicSubnets[1].ID().ToStringOutput(),
+				d.VPC.Out.PrivateSubnets[0].ID().ToStringOutput(), d.VPC.Out.PrivateSubnets[1].ID().ToStringOutput(),
+			},
+			Tags: pulumi.StringMap{
+				"Name": pulumi.String(dbSubnetName),
+			},
+		}, pulumi.DependsOn([]pulumi.Resource{
+			d.VPC.Out.PublicSubnets[0], d.VPC.Out.PublicSubnets[1],
+			d.VPC.Out.PrivateSubnets[0], d.VPC.Out.PrivateSubnets[1],
+		}),
+		)
+		if err != nil {
+			return err
+		}
+
+		d.Args.DbSubnetGroupName = dbSubnet.Name
+		opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dbSubnet}))
+	}
+
 	d.Args.Name = pulumi.String(d.Name)
 
 	// dbArgs := rds.InstanceArgs{
@@ -75,12 +83,6 @@ func (d *Postgres) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error
 	// 	DbSubnetGroupName:   dbSubnet.Name,
 	// 	SkipFinalSnapshot:   pulumi.Bool(d.SkipFinalSnapshot),
 	// }
-
-	if opts == nil {
-		opts = []pulumi.ResourceOption{}
-	}
-
-	opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dbSubnet}))
 
 	database, err := rds.NewInstance(ctx, d.Name, d.Args, opts...)
 	if err != nil {
