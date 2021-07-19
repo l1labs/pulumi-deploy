@@ -121,7 +121,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 		LoadBalancerArn: frontEndLoadBalancer.Arn,
 		Port:            pulumi.Int(443),
 		Protocol:        pulumi.String("HTTPS"),
-		SslPolicy:       pulumi.String("ELBSecurityPolicy-2016-08"),
+		SslPolicy:       pulumi.String("ELBSecurityPolicy-FS-1-2-Res-2020-10"),
 		CertificateArn:  l.HTTPS[0].Out.Cert.Arn,
 		DefaultActions: lb.ListenerDefaultActionArray{
 			&lb.ListenerDefaultActionArgs{
