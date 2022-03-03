@@ -108,7 +108,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 	record, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{
 		ZoneId: pulumi.String(zone.ZoneId),
 		Name:   recordName,
-		Type:   validation.ResourceRecordType(),
+		Type:   validation.ResourceRecordType().Elem().ToStringOutput(),
 		Ttl:    pulumi.Int(300),
 		Records: pulumi.StringArray{
 			recordValue,
@@ -159,7 +159,7 @@ func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string,
 	_, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{
 		ZoneId: pulumi.String(zone.ZoneId),
 		Name:   recordName,
-		Type:   validation.ResourceRecordType(),
+		Type:   validation.ResourceRecordType().Elem().ToStringOutput(),
 		Ttl:    pulumi.Int(300),
 		Records: pulumi.StringArray{
 			recordValue,
