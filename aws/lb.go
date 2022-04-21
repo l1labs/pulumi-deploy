@@ -95,6 +95,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 		IpAddressType:    pulumi.String("ipv4"),
 		SecurityGroups:   pulumi.StringArray{securityGroup.ID().ToStringOutput()},
 		DropInvalidHeaderFields: pulumi.Bool(true),
+		EnableDeletionProtection: pulumi.Bool(true),
 	})
 	if err != nil {
 		return err
