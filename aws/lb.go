@@ -5,6 +5,8 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
+	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
@@ -15,6 +17,7 @@ type LoadBalancer struct {
 	VPC         *VPC
 	HTTPS       []*HTTPS
 	HealthCheck *lb.TargetGroupHealthCheckArgs
+	LogBucket   *s3.Bucket
 
 	Out struct {
 		SecurityGroup *ec2.SecurityGroup
@@ -86,17 +89,27 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 	l.Out.SecurityGroup = securityGroup
 
 	lbName := fmt.Sprintf("%v-lb", l.Name)
-	frontEndLoadBalancer, err := lb.NewLoadBalancer(ctx, lbName, &lb.LoadBalancerArgs{
+	lbArgs := &lb.LoadBalancerArgs{
 		Subnets: pulumi.StringArray{
 			l.VPC.Out.PublicSubnets[0].ID().ToStringOutput(), l.VPC.Out.PublicSubnets[1].ID().ToStringOutput(),
 		},
-		Name:             pulumi.String(lbName),
-		LoadBalancerType: pulumi.String("application"),
-		IpAddressType:    pulumi.String("ipv4"),
-		SecurityGroups:   pulumi.StringArray{securityGroup.ID().ToStringOutput()},
-		DropInvalidHeaderFields: pulumi.Bool(true),
+		Name:                     pulumi.String(lbName),
+		LoadBalancerType:         pulumi.String("application"),
+		IpAddressType:            pulumi.String("ipv4"),
+		SecurityGroups:           pulumi.StringArray{securityGroup.ID().ToStringOutput()},
+		DropInvalidHeaderFields:  pulumi.Bool(true),
 		EnableDeletionProtection: pulumi.Bool(true),
-	})
+	}
+
+	if bucket := l.LogBucket; bucket != nil {
+		lbArgs.AccessLogs = &lb.LoadBalancerAccessLogsArgs{
+			Enabled: pulumi.Bool(true),
+			Bucket:  bucket.Bucket,
+			Prefix:  pulumi.String(fmt.Sprintf("%v-lb", l.Name)),
+		}
+	}
+
+	frontEndLoadBalancer, err := lb.NewLoadBalancer(ctx, lbName, lbArgs)
 	if err != nil {
 		return err
 	}
