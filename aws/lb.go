@@ -103,6 +103,9 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 	}
 
 	if bucket := l.LogBucket; bucket != nil {
+		ctx.Export("access-logs-bucket", bucket.Bucket)
+		ctx.Export("access-logs-prefix", l.LogPrefix)
+
 		lbArgs.AccessLogs = &lb.LoadBalancerAccessLogsArgs{
 			Enabled: pulumi.Bool(true),
 			Bucket:  bucket.Bucket,
