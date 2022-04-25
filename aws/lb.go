@@ -18,7 +18,7 @@ type LoadBalancer struct {
 	HTTPS       []*HTTPS
 	HealthCheck *lb.TargetGroupHealthCheckArgs
 	LogBucket   *s3.Bucket
-	LogPrefix   *string
+	LogPrefix   pulumi.String
 
 	Out struct {
 		SecurityGroup *ec2.SecurityGroup
@@ -106,7 +106,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 		lbArgs.AccessLogs = &lb.LoadBalancerAccessLogsArgs{
 			Enabled: pulumi.Bool(true),
 			Bucket:  bucket.Bucket,
-			Prefix:  pulumi.String(*l.LogPrefix),
+			Prefix:  l.LogPrefix,
 		}
 	}
 
