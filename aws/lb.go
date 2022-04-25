@@ -18,7 +18,7 @@ type LoadBalancer struct {
 	HTTPS       []*HTTPS
 	HealthCheck *lb.TargetGroupHealthCheckArgs
 	LogBucket   *s3.Bucket
-	LogPrefix   pulumi.String
+	LogPrefix   pulumi.StringInput
 
 	Out struct {
 		SecurityGroup *ec2.SecurityGroup
