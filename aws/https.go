@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acm"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/acm"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/route53"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // HTTPS is the struct for creating HTTPS certs and associated DNS records
@@ -26,19 +26,19 @@ type HTTPS struct {
 
 func (s *HTTPS) Validate() error {
 	if s.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing HTTPS.Name")
 	}
 
 	if s.Zone == "" {
-		return fmt.Errorf("Missing Zone")
+		return fmt.Errorf("missing HTTPS.Zone")
 	}
 
 	if !strings.HasSuffix(s.Zone, ".") {
-		return fmt.Errorf("Zone <%v> is invalid - must end with trailing period, i.e. <domain.com.>", s.Zone)
+		return fmt.Errorf("HTTPS.Zone <%v> is invalid - must end with trailing period, i.e. <domain.com.>", s.Zone)
 	}
 
 	if s.DomainName == "" {
-		return fmt.Errorf("Missing DomainName")
+		return fmt.Errorf("missing HTTPS.DomainName")
 	}
 
 	return nil
@@ -81,28 +81,28 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 	}
 	s.Out.Zone = zone
 
-	recordName := validation.ResourceRecordName().ApplyString(
+	recordName := validation.ResourceRecordName().ApplyT(
 		func(value interface{}) (string, error) {
 			extracted, ok := value.(*string)
 			if !ok {
-				return "", fmt.Errorf("Unable to coerce %v", value)
+				return "", fmt.Errorf("unable to coerce %v", value)
 			}
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringOutput)
 
-	recordValue := validation.ResourceRecordValue().ApplyString(
+	recordValue := validation.ResourceRecordValue().ApplyT(
 		func(value interface{}) (string, error) {
 
 			extracted, ok := value.(*string)
 			if !ok {
-				return "", fmt.Errorf("Unable to coerce %v", value)
+				return "", fmt.Errorf("unable to coerce %v", value)
 			}
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringOutput)
 
 	urlName := fmt.Sprintf("%v-url", s.Name)
 	record, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{
@@ -132,28 +132,28 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 }
 
 func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string, zone *route53.LookupZoneResult, validation acm.CertificateDomainValidationOptionOutput) error {
-	recordName := validation.ResourceRecordName().ApplyString(
+	recordName := validation.ResourceRecordName().ApplyT(
 		func(value interface{}) (string, error) {
 			extracted, ok := value.(*string)
 			if !ok {
-				return "", fmt.Errorf("Unable to coerce %v", value)
+				return "", fmt.Errorf("unable to coerce %v", value)
 			}
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringOutput)
 
-	recordValue := validation.ResourceRecordValue().ApplyString(
+	recordValue := validation.ResourceRecordValue().ApplyT(
 		func(value interface{}) (string, error) {
 
 			extracted, ok := value.(*string)
 			if !ok {
-				return "", fmt.Errorf("Unable to coerce %v", value)
+				return "", fmt.Errorf("unable to coerce %v", value)
 			}
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringOutput)
 
 	urlName := fmt.Sprintf("%v-subject-url", name)
 	_, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{

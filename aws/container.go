@@ -17,11 +17,11 @@ type ContainerDefinition struct {
 
 func (d *ContainerDefinition) Validate() error {
 	if d.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing ContainerDefinition.Name")
 	}
 
 	if d.Image == "" {
-		return fmt.Errorf("Missing Image")
+		return fmt.Errorf("missing ContainerDefinition.Image")
 	}
 
 	if d.PortMappings == nil {
@@ -33,7 +33,7 @@ func (d *ContainerDefinition) Validate() error {
 	}
 
 	if d.LogConfiguration == nil {
-		return fmt.Errorf("Missing LogConfiguration")
+		return fmt.Errorf("missing ContainerDefinition.LogConfiguration")
 	}
 
 	return nil

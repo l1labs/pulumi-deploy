@@ -2,14 +2,15 @@ package aws
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecr"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
-	"github.com/pulumi/pulumi-docker/sdk/v2/go/docker"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/cloudwatch"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecr"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecs"
+	"github.com/pulumi/pulumi-docker/sdk/v3/go/docker"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // Service provides around an ECS service.
@@ -40,23 +41,23 @@ type Service struct {
 // Validate the service configuration.
 func (s *Service) Validate() error {
 	if s.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing Service.Name")
 	}
 
 	if s.Region == "" {
-		return fmt.Errorf("Missing Region")
+		return fmt.Errorf("missing Service.Region")
 	}
 
 	if s.Docker == nil {
-		return fmt.Errorf("Missing service.Docker args")
+		return fmt.Errorf("missing Service.Docker args")
 	}
 
 	if s.Task == nil {
-		return fmt.Errorf("Missing service.Task args")
+		return fmt.Errorf("missing Service.Task args")
 	}
 
 	if s.Service == nil {
-		return fmt.Errorf("Missing service.Service args")
+		return fmt.Errorf("missing Service.Service args")
 	}
 
 	return nil
@@ -86,32 +87,31 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	}
 
 	// Get repository credentials
-	repoCreds := repo.RegistryId.ApplyStringArray(func(rid string) ([]string, error) {
-		creds, err := ecr.GetCredentials(ctx, &ecr.GetCredentialsArgs{
-			RegistryId: rid,
-		})
+	registryInfo := repo.RegistryId.ApplyT(func(id string) (docker.ImageRegistry, error) {
+		creds, err := ecr.GetCredentials(ctx, &ecr.GetCredentialsArgs{RegistryId: id})
 		if err != nil {
-			return nil, err
+			return docker.ImageRegistry{}, err
 		}
-		data, err := base64.StdEncoding.DecodeString(creds.AuthorizationToken)
+		decoded, err := base64.StdEncoding.DecodeString(creds.AuthorizationToken)
 		if err != nil {
-			return nil, err
+			return docker.ImageRegistry{}, err
 		}
-		return strings.Split(string(data), ":"), nil
-	})
-
-	repoUser := repoCreds.Index(pulumi.Int(0))
-	repoPass := repoCreds.Index(pulumi.Int(1))
+		parts := strings.Split(string(decoded), ":")
+		if len(parts) != 2 {
+			return docker.ImageRegistry{}, errors.New("invalid credentials")
+		}
+		return docker.ImageRegistry{
+			Server:   creds.ProxyEndpoint,
+			Username: parts[0],
+			Password: parts[1],
+		}, nil
+	}).(docker.ImageRegistryOutput)
 
 	// Create image
 	image, err := docker.NewImage(ctx, s.Name, &docker.ImageArgs{
 		Build:     *s.Docker,
 		ImageName: repo.RepositoryUrl,
-		Registry: docker.ImageRegistryArgs{
-			Server:   repo.RepositoryUrl,
-			Username: repoUser,
-			Password: repoPass,
-		},
+		Registry:  registryInfo,
 	})
 	if err != nil {
 		return err
@@ -137,18 +137,18 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	}
 
 	// Create container definition
-	containerDef := pulumi.All(image.ImageName, s.Env, s.DockerLabels).ApplyString(
+	containerDef := pulumi.All(image.ImageName, s.Env, s.DockerLabels).ApplyT(
 		func(args []interface{}) (string, error) {
 			image := args[0].(string)
 
 			envMap, ok := args[1].(map[string]string)
 			if !ok {
-				return "", fmt.Errorf("Failed to coerce env")
+				return "", fmt.Errorf("failed to coerce env")
 			}
 
 			dockerLabels, ok := args[2].(map[string]string)
 			if !ok {
-				return "", fmt.Errorf("Failed to coerce dockerLabels")
+				return "", fmt.Errorf("failed to coerce dockerLabels")
 			}
 
 			env := []ContainerEnvVar{}
@@ -181,7 +181,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 
 			return def.String(), nil
 		},
-	)
+	).(pulumi.StringInput)
 
 	// Setup ECS task & service
 	taskName := fmt.Sprintf("%v-task", s.Name)

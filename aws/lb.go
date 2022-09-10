@@ -3,11 +3,11 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/lb"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
 
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // LoadBalancer is a helper struct for spinning up an ALB
@@ -30,7 +30,7 @@ type LoadBalancer struct {
 
 func (l *LoadBalancer) Validate() error {
 	if l.Name == "" {
-		return fmt.Errorf("Name cannot empty")
+		return fmt.Errorf("LoadBalancer.Name cannot empty")
 	}
 
 	if l.VPC == nil {

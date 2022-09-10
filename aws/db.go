@@ -3,8 +3,8 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/rds"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type Postgres struct {
@@ -19,15 +19,15 @@ type Postgres struct {
 
 func (d *Postgres) Validate() error {
 	if d.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing Postgres.Name")
 	}
 
 	if d.Args == nil {
-		return fmt.Errorf("Missing Postgres.Args")
+		return fmt.Errorf("missing Postgres.Args")
 	}
 
 	if d.VPC == nil {
-		return fmt.Errorf("Missing Postgres.VPC")
+		return fmt.Errorf("missing Postgres.VPC")
 	}
 
 	return nil
@@ -65,7 +65,7 @@ func (d *Postgres) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error
 		opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dbSubnet}))
 	}
 
-	d.Args.Name = pulumi.String(d.Name)
+	d.Args.DbName = pulumi.String(d.Name)
 
 	// dbArgs := rds.InstanceArgs{
 	// 	AllocatedStorage:    pulumi.Int(20),

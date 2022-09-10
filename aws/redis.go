@@ -3,9 +3,9 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/elasticache"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // Redis contains everything needed to spin up a secure Redis instance.
@@ -21,15 +21,15 @@ type Redis struct {
 
 func (r *Redis) Validate() error {
 	if r.Name == "" {
-		return fmt.Errorf("Name cannot empty")
+		return fmt.Errorf("Redis.Name cannot empty")
 	}
 
 	if r.Args == nil {
-		return fmt.Errorf("Missing Redis.Args")
+		return fmt.Errorf("Redis.Args cannot be nil")
 	}
 
 	if r.Subnet == nil {
-		return fmt.Errorf("Subnet cannot empty")
+		return fmt.Errorf("Redis.Subnet cannot empty")
 	}
 
 	return nil

@@ -3,9 +3,9 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecs"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type ECS struct {
@@ -19,7 +19,7 @@ type ECS struct {
 
 func (e *ECS) Validate() error {
 	if e.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing ECS.Name")
 	}
 
 	return nil

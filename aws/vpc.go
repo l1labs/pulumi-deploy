@@ -3,8 +3,8 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type VPC struct {
@@ -28,31 +28,31 @@ func (v *VPC) ID() pulumi.IDOutput {
 
 func (v *VPC) Validate() error {
 	if v.Name == "" {
-		return fmt.Errorf("Missing Name")
+		return fmt.Errorf("missing VPC.Name")
 	}
 
 	if v.CidrBlock == "" {
-		return fmt.Errorf("Missing CidrBlock")
+		return fmt.Errorf("missing VPC.CidrBlock")
 	}
 
 	if v.PublicSubnetCidrBlocks == nil {
-		return fmt.Errorf("Missing PublicSubnetCidrBLocks")
+		return fmt.Errorf("missing VPC.PublicSubnetCidrBLocks")
 	}
 
 	if len(v.PublicSubnetCidrBlocks) < 2 {
-		return fmt.Errorf("PublicSubnetCidrBLocks must have at least 2")
+		return fmt.Errorf("VPC.PublicSubnetCidrBLocks must have at least 2 CIDR blocks")
 	}
 
 	if v.PrivateSubnetCidrBlocks == nil {
-		return fmt.Errorf("Missing PrivateSubnetCidrBlocks")
+		return fmt.Errorf("missing VPC.PrivateSubnetCidrBlocks")
 	}
 
 	if len(v.PrivateSubnetCidrBlocks) < 2 {
-		return fmt.Errorf("PrivateSubnetCidrBlocks must have at least 2")
+		return fmt.Errorf("VPC.PrivateSubnetCidrBlocks must have at least 2 CIDR blocks")
 	}
 
 	if v.Region == "" {
-		return fmt.Errorf("Missing Region")
+		return fmt.Errorf("missing VPC.Region")
 	}
 
 	return nil
@@ -89,6 +89,9 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[0]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%va", v.Region)),
 	})
+	if err != nil {
+		return err
+	}
 
 	publicSubnet2Name := fmt.Sprintf("%v-public-subnet-2", v.Name)
 	publicSubnet2, err := ec2.NewSubnet(ctx, publicSubnet2Name, &ec2.SubnetArgs{
@@ -99,6 +102,9 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[1]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%vc", v.Region)),
 	})
+	if err != nil {
+		return err
+	}
 
 	// Create private subnets
 	privateSubnet1Name := fmt.Sprintf("%v-private-subnet-1", v.Name)
