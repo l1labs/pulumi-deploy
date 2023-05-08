@@ -23,6 +23,7 @@ type Service struct {
 
 	Ports           []ContainerPortMapping
 	LinuxParameters *ContainerLinuxParameters
+	MountPoints     []ContainerMountPoint
 
 	Env          pulumi.StringMapInput
 	DockerLabels pulumi.StringMapInput
@@ -162,6 +163,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 				Image:           image,
 				PortMappings:    s.Ports,
 				LinuxParameters: s.LinuxParameters,
+				MountPoints:     s.MountPoints,
 				Environment:     env,
 				DockerLabels:    dockerLabels,
 				LogConfiguration: &ContainerLogConfig{
@@ -196,6 +198,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		RequiresCompatibilities: s.Task.RequiresCompatibilities,
 		ExecutionRoleArn:        s.Task.ExecutionRoleArn,
 		ContainerDefinitions:    containerDef,
+		Volumes:                 s.Task.Volumes,
 	})
 	if err != nil {
 		return err

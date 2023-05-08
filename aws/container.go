@@ -13,6 +13,7 @@ type ContainerDefinition struct {
 	LogConfiguration *ContainerLogConfig       `json:"logConfiguration"`
 	DockerLabels     map[string]string         `json:"dockerLabels"`
 	LinuxParameters  *ContainerLinuxParameters `json:"linuxParameters,omitempty"`
+	MountPoints      []ContainerMountPoint     `json:"mountPoints,omitempty"`
 }
 
 func (d *ContainerDefinition) Validate() error {
@@ -68,4 +69,10 @@ type ContainerLogConfig struct {
 	LogDriver     string                 `json:"logDriver"`
 	SecretOptions interface{}            `json:"secretOptions"`
 	Options       map[string]interface{} `json:"options"`
+}
+
+type ContainerMountPoint struct {
+	ContainerPath string `json:"containerPath"`
+	ReadOnly      bool   `json:"readOnly"`
+	SourceVolume  string `json:"sourceVolume"`
 }
