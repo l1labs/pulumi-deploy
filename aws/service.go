@@ -199,6 +199,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		ExecutionRoleArn:        s.Task.ExecutionRoleArn,
 		ContainerDefinitions:    containerDef,
 		Volumes:                 s.Task.Volumes,
+		TaskRoleArn:             s.Task.TaskRoleArn,
 	})
 	if err != nil {
 		return err
