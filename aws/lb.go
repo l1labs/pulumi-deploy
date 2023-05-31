@@ -63,16 +63,16 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 	// Create a SecurityGroup that permits HTTP ingress and unrestricted egress.
 	sgName := fmt.Sprintf("%v-sg", l.Name)
 
-	httpIngress := ec2.SecurityGroupIngressArgs{
-		Protocol:   pulumi.String("tcp"),
-		FromPort:   pulumi.Int(80),
-		ToPort:     pulumi.Int(80),
-		CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+	port := 80
+	if l.IngressPort != nil {
+		port = *l.IngressPort
 	}
 
-	if l.IngressPort != nil {
-		httpIngress.FromPort = pulumi.Int(*l.IngressPort)
-		httpIngress.ToPort = pulumi.Int(*l.IngressPort)
+	httpIngress := ec2.SecurityGroupIngressArgs{
+		Protocol:   pulumi.String("tcp"),
+		FromPort:   pulumi.Int(port),
+		ToPort:     pulumi.Int(port),
+		CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
 	}
 
 	if l.IngressSelf != nil {
