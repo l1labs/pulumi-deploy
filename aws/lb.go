@@ -19,6 +19,7 @@ type LoadBalancer struct {
 	HealthCheck *lb.TargetGroupHealthCheckArgs
 	LogBucket   *s3.Bucket
 	LogPrefix   pulumi.StringInput
+	IngressPort *int
 
 	Out struct {
 		SecurityGroup *ec2.SecurityGroup
@@ -59,6 +60,12 @@ func (l *LoadBalancer) Validate() error {
 func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 	// Create a SecurityGroup that permits HTTP ingress and unrestricted egress.
 	sgName := fmt.Sprintf("%v-sg", l.Name)
+
+	port := 80
+	if l.IngressPort != nil {
+		port = *l.IngressPort
+	}
+
 	securityGroup, err := ec2.NewSecurityGroup(ctx, sgName, &ec2.SecurityGroupArgs{
 		VpcId: l.VPC.ID(),
 		Egress: ec2.SecurityGroupEgressArray{
@@ -78,8 +85,8 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 			},
 			ec2.SecurityGroupIngressArgs{
 				Protocol:   pulumi.String("tcp"),
-				FromPort:   pulumi.Int(80),
-				ToPort:     pulumi.Int(80),
+				FromPort:   pulumi.Int(port),
+				ToPort:     pulumi.Int(port),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
 			},
 		},
