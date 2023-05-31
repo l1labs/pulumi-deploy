@@ -129,7 +129,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 	tgName := fmt.Sprintf("%v-tg", l.Name)
 	frontEndTargetGroup, err := lb.NewTargetGroup(ctx, tgName, &lb.TargetGroupArgs{
 		Name:                pulumi.String(tgName),
-		Port:                pulumi.Int(80),
+		Port:                pulumi.Int(port),
 		Protocol:            pulumi.String("HTTP"),
 		VpcId:               l.VPC.ID(),
 		TargetType:          pulumi.String("ip"),
