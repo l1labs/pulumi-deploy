@@ -2,6 +2,7 @@ package aws
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -24,6 +25,8 @@ type Service struct {
 	Ports           []ContainerPortMapping
 	LinuxParameters *ContainerLinuxParameters
 	MountPoints     []ContainerMountPoint
+
+	SidecarContainers []ContainerDefinition
 
 	Env          pulumi.StringMapInput
 	DockerLabels pulumi.StringMapInput
@@ -119,16 +122,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	}
 
 	// Create log group
-	logGroup := fmt.Sprintf("/fargate/service/%v", s.Name)
-	_, err = cloudwatch.NewLogGroup(ctx, logGroup, &cloudwatch.LogGroupArgs{
-		Name: pulumi.String(logGroup),
-		Tags: pulumi.StringMap{
-			// "Application": pulumi.String("serviceA"),
-			// "Environment": pulumi.String("production"),
-		},
-
-		RetentionInDays: pulumi.Int(s.LogRetentionDays),
-	})
+	logConfiguration, err := ServiceLogConfiguration(ctx, s.Name, s.Region, s.LogRetentionDays)
 	if err != nil {
 		return err
 	}
@@ -138,7 +132,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	}
 
 	// Create container definition
-	containerDef := pulumi.All(image.ImageName, s.Env, s.DockerLabels).ApplyString(
+	containerDef := pulumi.All(image.ImageName, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyString(
 		func(args []interface{}) (string, error) {
 			image := args[0].(string)
 
@@ -152,6 +146,16 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 				return "", fmt.Errorf("Failed to coerce dockerLabels")
 			}
 
+			sidecarContainers, ok := args[3].([]ContainerDefinition)
+			if !ok {
+				return "", fmt.Errorf("Failed to coerce sidecar containers")
+			}
+
+			logConfig, ok := args[4].(*ContainerLogConfig)
+			if !ok {
+				return "", fmt.Errorf("Failed to coerce container log config")
+			}
+
 			env := []ContainerEnvVar{}
 
 			for key, value := range envMap {
@@ -159,29 +163,38 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 			}
 
 			def := ContainerDefinition{
-				Name:            s.Name,
-				Image:           image,
-				PortMappings:    s.Ports,
-				LinuxParameters: s.LinuxParameters,
-				MountPoints:     s.MountPoints,
-				Environment:     env,
-				DockerLabels:    dockerLabels,
-				LogConfiguration: &ContainerLogConfig{
-					LogDriver:     "awslogs",
-					SecretOptions: nil,
-					Options: map[string]interface{}{
-						"awslogs-group":         logGroup,
-						"awslogs-region":        s.Region,
-						"awslogs-stream-prefix": "fargate",
-					},
-				},
+				Name:             s.Name,
+				Image:            image,
+				PortMappings:     s.Ports,
+				LinuxParameters:  s.LinuxParameters,
+				MountPoints:      s.MountPoints,
+				Environment:      env,
+				DockerLabels:     dockerLabels,
+				LogConfiguration: logConfig,
 			}
 
 			if err := def.Validate(); err != nil {
 				return "", err
 			}
 
-			return def.String(), nil
+			if len(sidecarContainers) > 0 {
+				for _, sc := range sidecarContainers {
+					if err := sc.Validate(); err != nil {
+						return "", err
+					}
+				}
+
+				all := []ContainerDefinition{def}
+				all = append(all, sidecarContainers...)
+
+				bytes, err := json.Marshal(all)
+				if err != nil {
+					return "", err
+				}
+				return string(bytes), nil
+			} else {
+				return def.String(), nil
+			}
 		},
 	)
 
@@ -218,4 +231,26 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	s.Out.Service = service
 
 	return nil
+}
+
+func ServiceLogConfiguration(ctx *pulumi.Context, name, region string, logRetentionDays int) (*ContainerLogConfig, error) {
+	logGroup := fmt.Sprintf("/fargate/service/%v", name)
+	_, err := cloudwatch.NewLogGroup(ctx, logGroup, &cloudwatch.LogGroupArgs{
+		Name:            pulumi.String(logGroup),
+		Tags:            pulumi.StringMap{},
+		RetentionInDays: pulumi.Int(logRetentionDays),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &ContainerLogConfig{
+		LogDriver:     "awslogs",
+		SecretOptions: nil,
+		Options: map[string]interface{}{
+			"awslogs-group":         logGroup,
+			"awslogs-region":        region,
+			"awslogs-stream-prefix": "fargate",
+		},
+	}, nil
 }
