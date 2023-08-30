@@ -74,10 +74,6 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		Docker: s.Docker,
 	}
 
-	if err := d.Validate(); err != nil {
-		return err
-	}
-
 	if err := d.Run(ctx); err != nil {
 		return err
 	}

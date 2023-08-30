@@ -33,6 +33,10 @@ func (d *Docker) Validate() error {
 }
 
 func (d *Docker) Run(ctx *pulumi.Context) error {
+	if err := d.Validate(); err != nil {
+		return err
+	}
+
 	// Create docker repo
 	repo, err := ecr.NewRepository(ctx, d.Name, &ecr.RepositoryArgs{
 		Name: pulumi.String(d.Name),
