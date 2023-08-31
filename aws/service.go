@@ -88,6 +88,10 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		s.Env = pulumi.StringMap{}
 	}
 
+	if s.SidecarContainers == nil {
+		s.SidecarContainers = pulumi.StringArray{}
+	}
+
 	// Create container definition
 	containerDef := pulumi.All(d.Out.Image.ImageName, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyString(
 		func(args []interface{}) (string, error) {
