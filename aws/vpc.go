@@ -65,7 +65,8 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 
 	vpcName := fmt.Sprintf("%v-vpc", v.Name)
 	vpcArgs := &ec2.VpcArgs{
-		CidrBlock: pulumi.String(v.CidrBlock),
+		EnableDnsHostnames: pulumi.BoolPtr(true),
+		CidrBlock:          pulumi.String(v.CidrBlock),
 		Tags: pulumi.StringMap{
 			"Name": pulumi.String(vpcName),
 		},
