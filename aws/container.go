@@ -6,6 +6,7 @@ import (
 )
 
 type ContainerDefinition struct {
+	Command          []string                  `json:"command,omitempty"`
 	Name             string                    `json:"name"`
 	Image            string                    `json:"image"`
 	PortMappings     []ContainerPortMapping    `json:"portMappings"`
