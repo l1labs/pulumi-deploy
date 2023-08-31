@@ -43,7 +43,7 @@ func (d *ContainerDefinition) Validate() error {
 func (d *ContainerDefinition) String() string {
 	data, _ := json.Marshal(d)
 
-	return "[" + string(data) + "]"
+	return string(data)
 }
 
 type ContainerLinuxParameters struct {

@@ -1,8 +1,8 @@
 package aws
 
 import (
-	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
@@ -23,7 +23,7 @@ type Service struct {
 	LinuxParameters *ContainerLinuxParameters
 	MountPoints     []ContainerMountPoint
 
-	SidecarContainers []ContainerDefinition
+	SidecarContainers pulumi.StringArrayInput
 
 	Env          pulumi.StringMapInput
 	DockerLabels pulumi.StringMapInput
@@ -103,7 +103,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 				return "", fmt.Errorf("Failed to coerce dockerLabels")
 			}
 
-			sidecarContainers, ok := args[3].([]ContainerDefinition)
+			sidecarContainers, ok := args[3].([]string)
 			if !ok {
 				return "", fmt.Errorf("Failed to coerce sidecar containers")
 			}
@@ -134,24 +134,12 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 				return "", err
 			}
 
-			if len(sidecarContainers) > 0 {
-				for _, sc := range sidecarContainers {
-					if err := sc.Validate(); err != nil {
-						return "", err
-					}
-				}
-
-				all := []ContainerDefinition{def}
-				all = append(all, sidecarContainers...)
-
-				bytes, err := json.Marshal(all)
-				if err != nil {
-					return "", err
-				}
-				return string(bytes), nil
-			} else {
-				return def.String(), nil
+			containers := []string{
+				def.String(),
 			}
+			containers = append(containers, sidecarContainers...)
+
+			return "[" + strings.Join(containers, ",") + "]", nil
 		},
 	)
 
