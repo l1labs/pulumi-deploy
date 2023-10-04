@@ -64,7 +64,7 @@ func (s *Service) Validate() error {
 }
 
 // Run will run the service confifuration, returning any errors.
-func (s *Service) Run(ctx *pulumi.Context) error {
+func (s *Service) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := s.Validate(); err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		Docker: s.Docker,
 	}
 
-	if err := d.Run(ctx); err != nil {
+	if err := d.Run(ctx, opts...); err != nil {
 		return err
 	}
 
@@ -162,7 +162,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 		ContainerDefinitions:    containerDef,
 		Volumes:                 s.Task.Volumes,
 		TaskRoleArn:             s.Task.TaskRoleArn,
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	serviceName := fmt.Sprintf("%v-svc", s.Name)
 	s.Service.TaskDefinition = appTask.Arn
 
-	service, err := ecs.NewService(ctx, serviceName, s.Service)
+	service, err := ecs.NewService(ctx, serviceName, s.Service, opts...)
 	if err != nil {
 		return err
 	}

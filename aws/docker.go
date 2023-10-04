@@ -32,7 +32,7 @@ func (d *Docker) Validate() error {
 	return nil
 }
 
-func (d *Docker) Run(ctx *pulumi.Context) error {
+func (d *Docker) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := d.Validate(); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (d *Docker) Run(ctx *pulumi.Context) error {
 		ImageScanningConfiguration: &ecr.RepositoryImageScanningConfigurationArgs{
 			ScanOnPush: pulumi.Bool(true),
 		},
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (d *Docker) Run(ctx *pulumi.Context) error {
 			Username: repoUser,
 			Password: repoPass,
 		},
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
