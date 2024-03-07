@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecr"
-	"github.com/pulumi/pulumi-docker/sdk/v3/go/docker"
+	"github.com/pulumi/pulumi-docker/sdk/v4/go/docker"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -78,7 +78,7 @@ func (d *Docker) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	image, err := docker.NewImage(ctx, d.Name, &docker.ImageArgs{
 		Build:     *d.Docker,
 		ImageName: repo.RepositoryUrl,
-		Registry: docker.ImageRegistryArgs{
+		Registry: docker.RegistryArgs{
 			Server:   repo.RepositoryUrl,
 			Username: repoUser,
 			Password: repoPass,

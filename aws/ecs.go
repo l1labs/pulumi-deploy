@@ -3,10 +3,10 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/cloudwatch"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecs"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/kms"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/cloudwatch"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ecs"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/kms"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
