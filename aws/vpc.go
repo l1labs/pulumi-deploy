@@ -112,7 +112,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[1]),
-		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
+		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix2))),
 	})
 	if err != nil {
 		return err
