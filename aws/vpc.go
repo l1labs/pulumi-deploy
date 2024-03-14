@@ -15,6 +15,9 @@ type VPC struct {
 	PublicSubnetCidrBlocks  []string
 	PrivateSubnetCidrBlocks []string
 
+	AZSuffix1 rune
+	AZSuffix2 rune
+
 	Out struct {
 		VPC            *ec2.Vpc
 		PublicSubnets  []*ec2.Subnet
@@ -55,6 +58,14 @@ func (v *VPC) Validate() error {
 		return fmt.Errorf("missing VPC.Region")
 	}
 
+	if v.AZSuffix1 < 'a' || v.AZSuffix1 > 'z' {
+		return fmt.Errorf("invalid AZSufix1")
+	}
+
+	if v.AZSuffix2 < 'a' || v.AZSuffix2 > 'z' {
+		return fmt.Errorf("invalid AZSufix2")
+	}
+
 	return nil
 }
 
@@ -88,7 +99,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[0]),
-		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%va", v.Region)),
+		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
 	})
 	if err != nil {
 		return err
@@ -101,7 +112,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[1]),
-		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%vc", v.Region)),
+		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
 	})
 	if err != nil {
 		return err
@@ -115,7 +126,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PrivateSubnetCidrBlocks[0]),
-		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%va", v.Region)),
+		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
 	})
 	if err != nil {
 		return err
@@ -128,7 +139,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PrivateSubnetCidrBlocks[1]),
-		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%vc", v.Region)),
+		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix2))),
 	})
 	if err != nil {
 		return err
