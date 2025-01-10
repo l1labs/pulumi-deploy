@@ -177,8 +177,9 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		Tags: pulumi.StringMap{
 			"Name": pulumi.String(natName),
 		},
-		AllocationId: elasticIPAllocation.ID(),
-		SubnetId:     v.Out.PublicSubnets[0].ID(),
+		AllocationId:     elasticIPAllocation.ID(),
+		SubnetId:         v.Out.PublicSubnets[0].ID(),
+		ConnectivityType: pulumi.String("public"),
 	}, pulumi.DependsOn([]pulumi.Resource{v.Out.PublicSubnets[0], elasticIPAllocation}))
 	if err != nil {
 		return err
