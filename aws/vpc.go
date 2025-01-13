@@ -180,7 +180,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		AllocationId:     elasticIPAllocation.ID(),
 		SubnetId:         v.Out.PublicSubnets[0].ID(),
 		ConnectivityType: pulumi.String("public"),
-	}, pulumi.DependsOn([]pulumi.Resource{v.Out.PublicSubnets[0], elasticIPAllocation}))
+	}, pulumi.DependsOn([]pulumi.Resource{v.Out.PublicSubnets[0], elasticIPAllocation}), pulumi.IgnoreChanges([]string{"connectivityType", "tagsAll"}))
 	if err != nil {
 		return err
 	}
