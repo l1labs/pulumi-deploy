@@ -93,7 +93,7 @@ func (s *Service) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error 
 	}
 
 	// Create container definition
-	containerDef := pulumi.All(d.Out.Image.ImageName, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyT(
+	containerDef := pulumi.All(d.Out.Image.RepoDigest, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyT(
 		func(args []interface{}) (string, error) {
 			image := args[0].(string)
 
