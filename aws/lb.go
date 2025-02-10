@@ -59,7 +59,11 @@ func (l *LoadBalancer) Validate() error {
 	return nil
 }
 
-func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
+func (l *LoadBalancer) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
+	}
+
 	// Create a SecurityGroup that permits HTTP ingress and unrestricted egress.
 	sgName := fmt.Sprintf("%v-sg", l.Name)
 
@@ -102,7 +106,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 			},
 			httpIngress,
 		},
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -132,7 +136,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 		}
 	}
 
-	frontEndLoadBalancer, err := lb.NewLoadBalancer(ctx, lbName, lbArgs)
+	frontEndLoadBalancer, err := lb.NewLoadBalancer(ctx, lbName, lbArgs, opts...)
 	if err != nil {
 		return err
 	}
@@ -166,7 +170,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 				TargetGroupArn: frontEndTargetGroup.Arn,
 			},
 		},
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -178,7 +182,7 @@ func (l *LoadBalancer) Run(ctx *pulumi.Context) error {
 			_, err = lb.NewListenerCertificate(ctx, name, &lb.ListenerCertificateArgs{
 				ListenerArn:    frontEndListener.Arn,
 				CertificateArn: l.HTTPS[i].Out.Cert.Arn,
-			})
+			}, opts...)
 
 			if err != nil {
 				return err

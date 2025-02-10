@@ -35,9 +35,12 @@ func (r *Redis) Validate() error {
 	return nil
 }
 
-func (r *Redis) Run(ctx *pulumi.Context) error {
+func (r *Redis) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := r.Validate(); err != nil {
 		return err
+	}
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
 	}
 
 	redisSubnetName := fmt.Sprintf("%v-subnet", r.Name)

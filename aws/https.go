@@ -44,9 +44,12 @@ func (s *HTTPS) Validate() error {
 	return nil
 }
 
-func (s *HTTPS) Run(ctx *pulumi.Context) error {
+func (s *HTTPS) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := s.Validate(); err != nil {
 		return err
+	}
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
 	}
 
 	certName := fmt.Sprintf("%v-cert", s.Name)
@@ -64,7 +67,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 		args.SubjectAlternativeNames = values
 	}
 
-	cert, err := acm.NewCertificate(ctx, certName, args)
+	cert, err := acm.NewCertificate(ctx, certName, args, opts...)
 	if err != nil {
 		return err
 	}
@@ -113,7 +116,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 		Records: pulumi.StringArray{
 			recordValue,
 		},
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -122,7 +125,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 	if len(s.SubjectAlternativeNames) > 0 {
 		for i := 1; i < len(s.SubjectAlternativeNames)+1; i++ {
 			validation := cert.DomainValidationOptions.Index(pulumi.Int(i))
-			if err := s.validateSubjectAlternativeName(ctx, fmt.Sprintf("%v-%d", s.Name, i), zone, validation); err != nil {
+			if err := s.validateSubjectAlternativeName(ctx, fmt.Sprintf("%v-%d", s.Name, i), zone, validation, opts...); err != nil {
 				return err
 			}
 		}
@@ -131,7 +134,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 	return nil
 }
 
-func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string, zone *route53.LookupZoneResult, validation acm.CertificateDomainValidationOptionOutput) error {
+func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string, zone *route53.LookupZoneResult, validation acm.CertificateDomainValidationOptionOutput, opts ...pulumi.ResourceOption) error {
 	recordName := validation.ResourceRecordName().ApplyT(
 		func(value interface{}) (string, error) {
 			extracted, ok := value.(*string)
@@ -164,7 +167,7 @@ func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string,
 		Records: pulumi.StringArray{
 			recordValue,
 		},
-	})
+	}, opts...)
 
 	if err != nil {
 		return err

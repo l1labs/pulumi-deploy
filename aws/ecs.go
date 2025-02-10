@@ -28,22 +28,25 @@ func (e *ECS) Validate() error {
 	return nil
 }
 
-func (e *ECS) Run(ctx *pulumi.Context) error {
+func (e *ECS) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := e.Validate(); err != nil {
 		return err
+	}
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
 	}
 	var cluster *ecs.Cluster
 	if e.EnableLogging {
 		logKey, err := kms.NewKey(ctx, fmt.Sprintf("%v-log-key", e.Name), &kms.KeyArgs{
 			Description:          pulumi.String(fmt.Sprintf("%v KMS encryption key for logging container activity", e.Name)),
 			DeletionWindowInDays: pulumi.Int(7),
-		})
+		}, opts...)
 		if err != nil {
 			return err
 		}
 		ctx.Export("CLUSTER-LOG-KMS-KEY-ID", logKey.ID())
 
-		logGroup, err := cloudwatch.NewLogGroup(ctx, fmt.Sprintf("%v-log-group", e.Name), nil)
+		logGroup, err := cloudwatch.NewLogGroup(ctx, fmt.Sprintf("%v-log-group", e.Name), nil, opts...)
 		if err != nil {
 			return err
 		}
@@ -61,7 +64,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 					},
 				},
 			},
-		})
+		}, opts...)
 		if err != nil {
 			return err
 		}
@@ -75,7 +78,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 					Value: pulumi.String("enabled"),
 				},
 			},
-		})
+		}, opts...)
 		if err != nil {
 			return err
 		}
@@ -97,7 +100,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 					"Action": "sts:AssumeRole"
 				}]
 			}`),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -106,7 +109,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 	_, err = iam.NewRolePolicyAttachment(ctx, fmt.Sprintf("%v-task-exec-policy", e.Name), &iam.RolePolicyAttachmentArgs{
 		Role:      taskExecRole.Name,
 		PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}

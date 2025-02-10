@@ -69,9 +69,12 @@ func (v *VPC) Validate() error {
 	return nil
 }
 
-func (v *VPC) Run(ctx *pulumi.Context) error {
+func (v *VPC) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error {
 	if err := v.Validate(); err != nil {
 		return err
+	}
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
 	}
 
 	vpcName := fmt.Sprintf("%v-vpc", v.Name)
@@ -83,7 +86,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		},
 	}
 
-	vpc, err := ec2.NewVpc(ctx, fmt.Sprintf("%v-vpc", v.Name), vpcArgs)
+	vpc, err := ec2.NewVpc(ctx, fmt.Sprintf("%v-vpc", v.Name), vpcArgs, opts...)
 	if err != nil {
 		return err
 	}
@@ -100,7 +103,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[0]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -113,7 +116,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PublicSubnetCidrBlocks[1]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix2))),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -127,7 +130,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PrivateSubnetCidrBlocks[0]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix1))),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -140,7 +143,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 		VpcId:            vpc.ID(),
 		CidrBlock:        pulumi.String(v.PrivateSubnetCidrBlocks[1]),
 		AvailabilityZone: pulumi.StringPtr(fmt.Sprintf("%v%s", v.Region, string(v.AZSuffix2))),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -167,7 +170,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 			"Name": pulumi.String(eipName),
 		},
 		Vpc: pulumi.Bool(true),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -199,7 +202,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 				GatewayId: internetGateway.ID(),
 			},
 		},
-	})
+	}, opts...)
 
 	if err != nil {
 		return err
@@ -217,7 +220,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 				NatGatewayId: natGateway.ID(),
 			},
 		},
-	})
+	}, opts...)
 
 	if err != nil {
 		return err
@@ -226,7 +229,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 	_, err = ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("%v-public-subnet-1-rt-assoc", v.Name), &ec2.RouteTableAssociationArgs{
 		SubnetId:     v.Out.PublicSubnets[0].ID(),
 		RouteTableId: publicSubnetRouteTable.ID(),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -234,7 +237,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 	_, err = ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("%v-public-subnet-2-rt-assoc", v.Name), &ec2.RouteTableAssociationArgs{
 		SubnetId:     v.Out.PublicSubnets[1].ID(),
 		RouteTableId: publicSubnetRouteTable.ID(),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -242,7 +245,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 	_, err = ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("%v-private-subnet-1-rt-assoc", v.Name), &ec2.RouteTableAssociationArgs{
 		SubnetId:     privateSubnet1.ID(),
 		RouteTableId: privateSubnetRouteTable.ID(),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}
@@ -250,7 +253,7 @@ func (v *VPC) Run(ctx *pulumi.Context) error {
 	_, err = ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("%v-private-subnet-2-rt-assoc", v.Name), &ec2.RouteTableAssociationArgs{
 		SubnetId:     privateSubnet2.ID(),
 		RouteTableId: privateSubnetRouteTable.ID(),
-	})
+	}, opts...)
 	if err != nil {
 		return err
 	}

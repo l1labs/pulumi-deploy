@@ -68,6 +68,9 @@ func (s *Service) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error 
 	if err := s.Validate(); err != nil {
 		return err
 	}
+	if opts == nil {
+		opts = []pulumi.ResourceOption{}
+	}
 
 	d := &Docker{
 		Name:   s.Name,
@@ -79,7 +82,7 @@ func (s *Service) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error 
 	}
 
 	// Create log group
-	logConfiguration, err := ServiceLogConfiguration(ctx, s.Name, s.Region, s.LogRetentionDays)
+	logConfiguration, err := ServiceLogConfiguration(ctx, s.Name, s.Region, s.LogRetentionDays, opts...)
 	if err != nil {
 		return err
 	}
@@ -182,13 +185,13 @@ func (s *Service) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error 
 	return nil
 }
 
-func ServiceLogConfiguration(ctx *pulumi.Context, name, region string, logRetentionDays int) (*ContainerLogConfig, error) {
+func ServiceLogConfiguration(ctx *pulumi.Context, name, region string, logRetentionDays int, opts ...pulumi.ResourceOption) (*ContainerLogConfig, error) {
 	logGroup := fmt.Sprintf("/fargate/service/%v", name)
 	_, err := cloudwatch.NewLogGroup(ctx, logGroup, &cloudwatch.LogGroupArgs{
 		Name:            pulumi.String(logGroup),
 		Tags:            pulumi.StringMap{},
 		RetentionInDays: pulumi.Int(logRetentionDays),
-	})
+	}, opts...)
 	if err != nil {
 		return nil, err
 	}
