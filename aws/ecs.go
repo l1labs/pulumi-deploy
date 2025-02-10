@@ -50,6 +50,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 		ctx.Export("CLUSTER-LOG-GROUP-ID", logGroup.ID())
 
 		cluster, err = ecs.NewCluster(ctx, e.Name, &ecs.ClusterArgs{
+			Name: pulumi.StringPtr(e.Name),
 			Configuration: &ecs.ClusterConfigurationArgs{
 				ExecuteCommandConfiguration: &ecs.ClusterConfigurationExecuteCommandConfigurationArgs{
 					KmsKeyId: logKey.Arn,
@@ -67,6 +68,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 	} else {
 		var err error
 		cluster, err = ecs.NewCluster(ctx, e.Name, &ecs.ClusterArgs{
+			Name: pulumi.StringPtr(e.Name),
 			Settings: ecs.ClusterSettingArray{
 				&ecs.ClusterSettingArgs{
 					Name:  pulumi.String("containerInsights"),
