@@ -8,10 +8,9 @@ import (
 )
 
 type Postgres struct {
-	Name    string
-	Args    *rds.InstanceArgs
-	VPC     *VPC
-	Replica bool
+	Name string
+	Args *rds.InstanceArgs
+	VPC  *VPC
 
 	Out struct {
 		DB *rds.Instance
@@ -64,10 +63,6 @@ func (d *Postgres) Run(ctx *pulumi.Context, opts ...pulumi.ResourceOption) error
 
 		d.Args.DbSubnetGroupName = dbSubnet.Name
 		opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dbSubnet}))
-	}
-
-	if !d.Replica {
-		d.Args.DbName = pulumi.String(d.Name)
 	}
 
 	// dbArgs := rds.InstanceArgs{
