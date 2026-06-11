@@ -113,6 +113,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 		Records: pulumi.StringArray{
 			recordValue,
 		},
+		AllowOverwrite: pulumi.BoolPtr(true),
 	})
 	if err != nil {
 		return err
@@ -164,6 +165,7 @@ func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string,
 		Records: pulumi.StringArray{
 			recordValue,
 		},
+		AllowOverwrite: pulumi.BoolPtr(true),
 	})
 
 	if err != nil {
