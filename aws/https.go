@@ -64,7 +64,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 		args.SubjectAlternativeNames = values
 	}
 
-	cert, err := acm.NewCertificate(ctx, certName, args)
+	cert, err := acm.NewCertificate(ctx, certName, args, pulumi.IgnoreChanges([]string{"renewalSummaries"}))
 	if err != nil {
 		return err
 	}
