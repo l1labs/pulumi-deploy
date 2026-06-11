@@ -3,9 +3,9 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/elasticache"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // Redis contains everything needed to spin up a secure Redis instance.
