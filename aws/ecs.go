@@ -3,8 +3,8 @@ package aws
 import (
 	"fmt"
 
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecs"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ecs"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -32,10 +32,7 @@ func (e *ECS) Run(ctx *pulumi.Context) error {
 
 	// Create ECS cluster
 	cluster, err := ecs.NewCluster(ctx, e.Name, &ecs.ClusterArgs{
-		CapacityProviders: pulumi.StringArray{},
-		Name:              pulumi.String(e.Name),
-		Settings:          nil,
-		Tags:              nil,
+		Name: pulumi.String(e.Name),
 	})
 	if err != nil {
 		return err
