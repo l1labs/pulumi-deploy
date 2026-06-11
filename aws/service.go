@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
-	"github.com/pulumi/pulumi-docker/sdk/v2/go/docker"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/cloudwatch"
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ecs"
+	"github.com/pulumi/pulumi-docker/sdk/v3/go/docker"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // Service provides around an ECS service.
@@ -93,7 +93,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 	}
 
 	// Create container definition
-	containerDef := pulumi.All(d.Out.Image.ImageName, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyString(
+	containerDef := pulumi.All(d.Out.Image.ImageName, s.Env, s.DockerLabels, s.SidecarContainers, logConfiguration).ApplyT(
 		func(args []interface{}) (string, error) {
 			image := args[0].(string)
 
@@ -145,7 +145,7 @@ func (s *Service) Run(ctx *pulumi.Context) error {
 
 			return "[" + strings.Join(containers, ",") + "]", nil
 		},
-	)
+	).(pulumi.StringInput)
 
 	// Setup ECS task & service
 	taskName := fmt.Sprintf("%v-task", s.Name)

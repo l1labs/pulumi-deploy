@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acm"
-	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/acm"
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/route53"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // HTTPS is the struct for creating HTTPS certs and associated DNS records
@@ -81,7 +81,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 	}
 	s.Out.Zone = zone
 
-	recordName := validation.ResourceRecordName().ApplyString(
+	recordName := validation.ResourceRecordName().ApplyT(
 		func(value interface{}) (string, error) {
 			extracted, ok := value.(*string)
 			if !ok {
@@ -90,9 +90,9 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringInput)
 
-	recordValue := validation.ResourceRecordValue().ApplyString(
+	recordValue := validation.ResourceRecordValue().ApplyT(
 		func(value interface{}) (string, error) {
 
 			extracted, ok := value.(*string)
@@ -102,7 +102,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringInput)
 
 	urlName := fmt.Sprintf("%v-url", s.Name)
 	record, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{
@@ -132,7 +132,7 @@ func (s *HTTPS) Run(ctx *pulumi.Context) error {
 }
 
 func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string, zone *route53.LookupZoneResult, validation acm.CertificateDomainValidationOptionOutput) error {
-	recordName := validation.ResourceRecordName().ApplyString(
+	recordName := validation.ResourceRecordName().ApplyT(
 		func(value interface{}) (string, error) {
 			extracted, ok := value.(*string)
 			if !ok {
@@ -141,9 +141,9 @@ func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string,
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringInput)
 
-	recordValue := validation.ResourceRecordValue().ApplyString(
+	recordValue := validation.ResourceRecordValue().ApplyT(
 		func(value interface{}) (string, error) {
 
 			extracted, ok := value.(*string)
@@ -153,7 +153,7 @@ func (s *HTTPS) validateSubjectAlternativeName(ctx *pulumi.Context, name string,
 
 			return *extracted, nil
 		},
-	)
+	).(pulumi.StringInput)
 
 	urlName := fmt.Sprintf("%v-subject-url", name)
 	_, err := route53.NewRecord(ctx, urlName, &route53.RecordArgs{
